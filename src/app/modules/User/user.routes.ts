@@ -1,19 +1,13 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { userController } from './user.controller';
+import { jwtHelpers } from '../../../helpers/jwtHelpers';
+import config from '../../../config';
+import { Secret } from 'jsonwebtoken';
+import auth from '../../middlewares/auth';
+import { UserRole } from '@prisma/client';
 
 const router = express.Router();
 
-const auth = (...roles: string[]) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const token = req.headers.authorization;
-      console.log(token);
-    } catch (err) {
-      next(err);
-    }
-  };
-};
-
-router.post('/', auth('ADMIN', 'SUPER_ADMIN'), userController.createAdmin);
+router.post('/', auth(UserRole.SUPER_ADMIN, UserRole.ADMIN), userController.createAdmin);
 
 export const userRoutes = router;
