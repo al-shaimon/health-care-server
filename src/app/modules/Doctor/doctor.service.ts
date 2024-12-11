@@ -61,7 +61,7 @@ const getAllFromDB = async (filters: IDoctorFilterRequest, options: IPaginationO
     orderBy:
       options.sortBy && options.sortOrder
         ? { [options.sortBy]: options.sortOrder }
-        : { createdAt: 'desc' },
+        : { averageRating: 'desc' },
     include: {
       doctorSpecialties: {
         include: {
