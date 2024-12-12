@@ -6,6 +6,11 @@ import { IPaginationOptions } from '../../interfaces/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { IAuthUser } from '../../interfaces/common';
 
+const convertDateTime = async (date: Date) => {
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() + offset);
+};
+
 const insertIntoDB = async (payload: ISchedule): Promise<Schedule[]> => {
   const { startDate, endDate, startTime, endTime } = payload;
 
@@ -33,9 +38,19 @@ const insertIntoDB = async (payload: ISchedule): Promise<Schedule[]> => {
     );
 
     while (startDateTime < endDateTime) {
+      // TITLE: USE THIS IF WANT TO STORE TIME IN BDT
+      // const scheduleData = {
+      //     startDateTime: startDateTime,
+      //     endDateTime: addMinutes(startDateTime, intervalTime)
+      // }
+
+      // TITLE: USE THIS IF WANT TO STORE TIME IN UTC
+      const s = await convertDateTime(startDateTime);
+      const e = await convertDateTime(addMinutes(startDateTime, intervalTime));
+
       const scheduleData = {
-        startDateTime: startDateTime,
-        endDateTime: addMinutes(startDateTime, intervalTime),
+        startDateTime: s,
+        endDateTime: e,
       };
 
       const existingSchedule = await prisma.schedule.findFirst({
@@ -112,6 +127,7 @@ const getAllFromDB = async (
   });
 
   const doctorScheduleIds = doctorSchedules.map((schedule) => schedule.scheduleId);
+  console.log(doctorScheduleIds);
 
   const result = await prisma.schedule.findMany({
     where: {
@@ -154,6 +170,7 @@ const getByIdFromDB = async (id: string): Promise<Schedule | null> => {
       id,
     },
   });
+  //console.log(result?.startDateTime.getHours() + ":" + result?.startDateTime.getMinutes())
   return result;
 };
 
